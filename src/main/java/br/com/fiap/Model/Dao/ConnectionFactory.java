@@ -14,8 +14,6 @@ public final class ConnectionFactory {
 
     private static final String DRIVER_JDBC = "oracle.jdbc.driver.OracleDriver";
     private static final String URL_PADRAO = "jdbc:oracle:thin:@oracle.fiap.com.br:1521:ORCL";
-    private static final String USUARIO_PADRAO = "rm564929";
-    private static final String SENHA_PADRAO = "060207";
 
     private ConnectionFactory() {
     }
@@ -25,8 +23,8 @@ public final class ConnectionFactory {
             Class.forName(DRIVER_JDBC);
             return DriverManager.getConnection(
                     valor("DB_URL", URL_PADRAO),
-                    valor("DB_USER", USUARIO_PADRAO),
-                    valor("DB_PASSWORD", SENHA_PADRAO));
+                    obrigatorio("DB_USER"),
+                    obrigatorio("DB_PASSWORD"));
         } catch (ClassNotFoundException e) {
             throw new PersistenciaException("Driver JDBC do Oracle não encontrado.", e);
         } catch (SQLException e) {
@@ -48,5 +46,13 @@ public final class ConnectionFactory {
     private static String valor(String variavel, String padrao) {
         String valor = System.getenv(variavel);
         return valor == null || valor.isBlank() ? padrao : valor;
+    }
+
+    private static String obrigatorio(String variavel) {
+        String valor = System.getenv(variavel);
+        if (valor == null || valor.isBlank()) {
+            throw new PersistenciaException("Variável de ambiente obrigatória não definida: " + variavel);
+        }
+        return valor;
     }
 }
